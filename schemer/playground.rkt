@@ -309,5 +309,20 @@
     ((eq? (operator-infix nexp) '*) (* (value-infix (1st-sub-exp-infix nexp)) (value-infix (2nd-sub-exp-infix nexp))))
     (else (up (value-infix (1st-sub-exp-infix nexp)) (value-infix (2nd-sub-exp-infix nexp))))))
 
+(define (zero?-paren n)
+  (null? n))
+
+(define (add1-paren n)
+  (cons '() n))
+
+(define (sub1-paren n)
+  (cdr n))
+
+(define (+-paren m n)
+  (cond
+    ((zero?-paren n) m)
+    (else (add1-paren (+-paren m (sub1-paren n))))))
+
+
 
 
