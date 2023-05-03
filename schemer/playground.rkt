@@ -257,3 +257,57 @@
     ((null? l) '())
     ((equal? (car l) s) (cdr l))
     (else (cons (car l) (rember-generic s l)))))
+
+;CHAPTER 5 --
+
+; i think the book gets this wrong...
+(define (numbered? aexp)
+  (cond
+    ((atom? aexp) (number? aexp))
+    ((or
+      (eq? (car (cdr aexp)) '+)
+      (eq? (car (cdr aexp)) '*)
+      (eq? (car (cdr aexp)) '^)) (and (numbered? (car aexp)) (numbered? (car (cdr (cdr aexp))))))
+    (else #f)))
+
+(define (value nexp)
+  (cond
+    ((atom? nexp) nexp)
+    ((eq? (car (cdr nexp)) '+) (+ (value (car nexp)) (value (car (cdr (cdr nexp))))))
+    ((eq? (car (cdr nexp)) '*) (* (value (car nexp) (value (car (cdr (cdr nexp)))))))
+    (else (up (value (car nexp) (value (car (cdr (cdr nexp)))))))))
+
+(define (1st-sub-exp aexp)
+  (car (cdr aexp)))
+
+(define (2nd-sub-exp aexp)
+  (car (cdr (cdr aexp))))
+
+(define (operator aexp)
+  (car aexp))
+
+(define (value-prefix nexp)
+  (cond
+    ((atom? nexp) nexp)
+    ((eq? (operator nexp) '+) (+ (value-prefix (1st-sub-exp nexp)) (value-prefix (2nd-sub-exp nexp))))
+    ((eq? (operator nexp) '*) (* (value-prefix (1st-sub-exp nexp)) (value-prefix (2nd-sub-exp nexp))))
+    (else (up (value-prefix (1st-sub-exp nexp)) (value-prefix (2nd-sub-exp nexp))))))
+
+(define (1st-sub-exp-infix aexp)
+  (car aexp))
+
+(define (2nd-sub-exp-infix aexp)
+  (car (cdr (cdr aexp))))
+
+(define (operator-infix aexp)
+  (car (cdr aexp)))
+
+(define (value-infix nexp)
+  (cond
+    ((atom? nexp) nexp)
+    ((eq? (operator-infix nexp) '+) (+ (value-infix (1st-sub-exp-infix nexp)) (value-infix (2nd-sub-exp-infix nexp))))
+    ((eq? (operator-infix nexp) '*) (* (value-infix (1st-sub-exp-infix nexp)) (value-infix (2nd-sub-exp-infix nexp))))
+    (else (up (value-infix (1st-sub-exp-infix nexp)) (value-infix (2nd-sub-exp-infix nexp))))))
+
+
+
