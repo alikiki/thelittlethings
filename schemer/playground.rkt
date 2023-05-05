@@ -258,7 +258,7 @@
     ((equal? (car l) s) (cdr l))
     (else (cons (car l) (rember-generic s l)))))
 
-;CHAPTER 5 --
+;CHAPTER 6 --
 
 ; i think the book gets this wrong...
 (define (numbered? aexp)
@@ -323,6 +323,88 @@
     ((zero?-paren n) m)
     (else (add1-paren (+-paren m (sub1-paren n))))))
 
+;CHAPTER 7--
+
+(define (set? lat)
+  (cond
+    ((null? lat) #t)
+    ((member? (car lat) (cdr lat)) #f)
+    (else (set? (cdr lat)))))
 
 
+(define (makeset lat)
+  (cond
+    ((null? lat) '())
+    ((member? (car lat) (cdr lat)) (makeset (cdr lat)))
+    (else (cons (car lat) (makeset (cdr lat))))))
 
+(define (makeset2 lat)
+  (cond
+    ((null? lat) '())
+    (else (cons (car lat) (makeset2 (multirember (car lat) (cdr lat)))))))
+
+(define (subset? set1 set2)
+  (cond
+    ((null? set1) #t)
+    ((and (member? (car set1) set2) (subset? (cdr set1) set2)) #t)
+    ; ((member? (car set1) set2) (subset? (cdr set1) set2))
+    (else #f)))
+
+(define (eqset? set1 set2)
+  (and (subset? set1 set2) (subset? set2 set1)))
+
+(define (intersect? set1 set2)
+  (cond
+    ((null? set1) #f)
+    ((or (member? (car set1) set2) (intersect? (cdr set1) set2)) #t)
+    (else #f)))
+
+(define (intersect set1 set2)
+  (cond
+    ((null? set1) '())
+    ((member? (car set1) set2) (cons (car set1) (intersect (cdr set1) set2)))
+    (else (intersect (cdr set1) set2))))
+
+(define (union set1 set2)
+  (cond
+    ((null? set1) set2)
+    ((member? (car set1) set2) (union (cdr set1) set2))
+    (else (cons (car set1) (union (cdr set1) set2)))))
+
+(define (intersectall l-set)
+  (cond
+    ((null? l-set) '())
+    (else (intersect (car l-set) (intersectall (cdr l-set))))))
+
+(define (a-pair? x)
+  (cond
+    ((or (atom? x) (null? x) (null? (cdr x))) #f)
+    (else (null? (cdr (cdr x))))))
+
+(define (first l)
+  (car l))
+
+(define (second l)
+  (car (cdr l)))
+
+(define (third l)
+  (car (cdr (cdr l))))
+
+(define (seconds l)
+  (cond
+    ((null? l) '())
+    (else (cons (second (car l)) (seconds (cdr l))))))
+
+(define (fun? rel)
+  (set? (firsts rel)))
+
+(define (revrel rel)
+  (cond
+    ((null? rel) '())
+    (else (cons (cons (second (car rel)) (first (car rel))) (revrel (cdr rel))))))
+
+(define (fullfun? fun)
+  (set? (seconds fun)))
+
+(define (one-to-one fun)
+  (fun? (revrel fun)))
