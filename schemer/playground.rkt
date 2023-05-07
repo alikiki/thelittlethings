@@ -1,6 +1,8 @@
 #lang racket
 (require "basics.rkt")
 
+; i'm really just doing this so i can read the reasoned schemer :)
+
 ;CHAPTER 3 ----
 
 (define (lat? l)
@@ -425,3 +427,49 @@
       ((null? l) '())
       ((test? a (car l)) (cdr l))
       (else (cons (car l) ((rember-fun test?) a (cdr l)))))))
+
+(define (insertL-fun test?)
+  (lambda (new old l)
+    (cond
+      ((null? l) '())
+      ((test? old (car l)) (cons new (cons old ((insertL-fun test?) new old (cdr l)))))
+      (else (cons (car l) ((insertL-fun test?) new old (cdr l)))))))
+
+(define (insertR-fun test?)
+  (lambda (new old l)
+    (cond
+      ((null? l) '())
+      ((test? old (car l)) (cons old (cons new ((insertL-fun test?) new old (cdr l)))))
+      (else (cons (car l) ((insertR-fun test?) new old (cdr l)))))))
+
+(define (seqL new old l)
+  (cons new (cons old l)))
+
+(define (seqR new old l)
+  (cons old (cons new l)))
+
+(define (insert-g seq)
+  (lambda (new old l)
+    (cond
+      ((null? l) '())
+      ((eq? (car l) old) (seq new old l))
+      (else (cons (car l) ((insert-g seq) new old (cdr l)))))))
+
+; (define (insertL) (insert-g seqL))
+; (define (insertR) (insert-g seqR))
+
+(define (insertL-gen)
+  (insert-g
+   (lambda (new old l)
+     (cons new (cons old l)))))
+
+(define (seqS new old l)
+  (cons new l))
+
+(define (subst-gen) (insert-g seqS))
+
+(define (rember-gen a l) ((insert-g (lambda (new old l) l)) #f a l))
+
+
+
+
