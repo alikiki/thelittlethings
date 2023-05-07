@@ -408,3 +408,20 @@
 
 (define (one-to-one fun)
   (fun? (revrel fun)))
+
+
+(define (rember-f test? a l)
+  (cond
+    ((null? l) '())
+    ((test? a (car l)) (cdr l))
+    (else (cons (car l) (rember-f test? a (cdr l))))))
+
+(define (eq?-c a)
+  (lambda (x) (eq? x a)))
+
+(define (rember-fun test?)
+  (lambda (a l)
+    (cond
+      ((null? l) '())
+      ((test? a (car l)) (cdr l))
+      (else (cons (car l) ((rember-fun test?) a (cdr l)))))))
