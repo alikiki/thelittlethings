@@ -470,6 +470,87 @@
 
 (define (rember-gen a l) ((insert-g (lambda (new old l) l)) #f a l))
 
+(define (atom-to-function x)
+  (cond
+    ((eq? x '+) (+))
+    ((eq? x '*) (*))
+    (else (up))))
+
+(define (value-using-atom2func x)
+  (cond
+    ((atom? x) x)
+    (else ((atom-to-function (operator x))
+           (value-using-atom2func (1st-sub-exp x))
+           (value-using-atom2func (2nd-sub-exp x))))))
+
+(define (multirember-f test?)
+  (lambda (a lat)
+    (cond
+      ((null? lat) '())
+      ((eq? a (car lat)) ((multirember-f test?) a (cdr lat)))
+      (else (cons (car lat) ((multirember-f test?) a (cdr lat)))))))
+
+(define multirember-eq?-rewrite (multirember-f eq?))
+
+(define (multiremberT test?)
+  (lambda (lat)
+    (cond
+      ((null? lat) '())
+      ((test? (car lat)) ((multiremberT test?) (cdr lat)))
+      (else (cons (car lat) ((multiremberT test?) (cdr lat)))))))
+
+(define (multiinsertLR new oldL oldR lat)
+  (cond
+    ((null? lat) '())
+    ((eq? oldL (car lat)) (cons new (cons oldL (multiinsertLR new oldL oldR (cdr lat)))))
+    ((eq? oldR (car lat)) (cons oldR (cons new (multiinsertLR new oldL oldR (cdr lat)))))
+    (else (cons (car lat) (multiinsertLR new oldL oldR (cdr lat))))))
+
+(define (multiinsertLR&co new oldL oldR lat col)
+  (cond
+    ((null? lat) (col '() 0 0))
+    ((eq? (car lat) oldL)
+     (multiinsertLR&co new oldL oldR (cdr lat)
+                       (lambda (newlat L R)
+                         (col (cons new (cons oldL newlat)) (add1 L) R))))
+    ((eq? (car lat) oldR)
+     (multiinsertLR&co new oldL oldR (cdr lat)
+                       (lambda (newlat L R)
+                         (col (cons oldR (cons new newlat)) L (add1 R)))))
+    (else
+     (multiinsertLR&co new oldL oldR (cdr lat)
+                       (lambda (newlat L R)
+                         (col (cons (car lat) newlat) L R))))))
+
+(define (evens-only* l)
+  (cond
+    ((null? l) '())
+    ((atom? (car l))
+     (cond
+       ((even? (car l)) (cons (car l) (evens-only* (cdr l))))
+       (else (evens-only* (cdr l)))))
+    (else (cons (evens-only* (car l)) (evens-only* (cdr l))))))
+
+(define (evens-only&co l col)
+  (cond
+    ((null? l) (col '() 1 0))
+    ((atom? (car l))
+     (cond
+       ((even? (car l)) (evens-only&co (cdr l)
+                                       (lambda (newlat p s)
+                                         (col (cons (car l) newlat) (* p (car l)) s))))
+       (else (evens-only&co (cdr l)
+                            (lambda (newlat p s)
+                              (col newlat p (+ s (car l))))))))
+    (else (evens-only&co (cdr l)
+                         (lambda (newlat p s)
+                           (evens-only&co (cdr l)
+                                          (lambda (dl dp ds)
+                                            (col (cons newlat dl) (* p dp) (+ s ds)))))))))
+
+
+
+
 
 
 
